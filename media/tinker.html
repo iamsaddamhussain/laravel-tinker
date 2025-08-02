@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Laravel Tinker</title>
+
+  <!-- CodeMirror Styles -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/codemirror@5.65.16/lib/codemirror.min.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/codemirror@5.65.16/theme/material.min.css" />
+
+  <style>
+    body {
+      background-color: #1e1e1e;
+      color: #d4d4d4;
+      font-family: sans-serif;
+      padding: 10px;
+    }
+    .CodeMirror {
+      height: 200px;
+      font-size: 14px;
+    }
+    pre {
+      background-color: #1e1e1e;
+      color: #d4d4d4;
+      padding: 10px;
+      border: 1px solid #444;
+      white-space: pre-wrap;
+      font-family: monospace;
+      overflow-x: auto;
+    }
+    button {
+      margin-top: 10px;
+      padding: 6px 14px;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <h3>Laravel Tinker</h3>
+  <textarea id="code">// Example:
+User::first()</textarea>
+
+  <button onclick="runTinker()" disabled>Run (Ctrl+Enter)</button>
+
+  <h4>Output:</h4>
+  <pre id="output">Waiting for input...</pre>
+
+  <!-- CodeMirror Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.16/lib/codemirror.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.16/mode/xml/xml.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.16/mode/javascript/javascript.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.16/mode/css/css.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.16/mode/htmlmixed/htmlmixed.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.16/mode/clike/clike.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.16/mode/php/php.min.js"></script>
+
+  <script>
+    const vscode = acquireVsCodeApi();
+
+    const editor = CodeMirror.fromTextArea(document.getElementById('code'), {
+      mode: 'application/x-httpd-php',
+      theme: 'material',
+      lineNumbers: true,
+      indentUnit: 4,
+      tabSize: 4
+    });
+    editor.on('change', () => {
+        const btn = document.querySelector('button');
+        const code = editor.getValue().trim();
+        btn.disabled = !code;
+    });
+
+    function runTinker() {
+        const code = editor.getValue().trim();
+        if (!code) {
+            document.getElementById('output').textContent = 'Please enter some code to run.';
+            return;
+        }
+
+        document.getElementById('output').textContent = 'Running...';
+        vscode.postMessage({ command: 'runTinker', text: code });
+    }
+
+    window.addEventListener('keydown', (e) => {
+      if (e.ctrlKey && e.key === 'Enter') {
+        e.preventDefault();
+        runTinker();
+      }
+    });
+
+    window.addEventListener('message', event => {
+      const message = event.data;
+      if (message.command === 'result') {
+        let output = message.output;
+        try {
+          const parsed = JSON.parse(output);
+          output = JSON.stringify(parsed, null, 2);
+        } catch (e) {
+          // Not JSON
+        }
+        document.getElementById('output').textContent = output;
+      }
+    });
+  </script>
+</body>
+</html>
