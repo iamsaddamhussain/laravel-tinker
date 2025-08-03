@@ -2,7 +2,8 @@
   "name": "laravel-tinker",
   "displayName": "laravel-tinker",
   "description": "",
-  "version": "0.0.1",
+  "version": "0.0.2",
+  "publisher": "my-laravel-extension",
   "engines": {
     "vscode": "^1.102.0"
   },
